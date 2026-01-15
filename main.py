@@ -1,7 +1,10 @@
 import os
 import warnings
+from pathlib import Path
 from dotenv import load_dotenv
 from classifier_demo import SentimentAnalyzer
+
+OPTIMIZED_MODEL_PATH = Path(__file__).parent / "optimized_sentiment.json"
 
 # Suppress DSPy/LiteLLM serialization warnings
 warnings.filterwarnings("ignore", message="Pydantic serializer warnings")
@@ -26,7 +29,12 @@ def main():
 
     print("\nAnalyzing...")
 
-    analyzer = SentimentAnalyzer()
+    # Use optimized model if available
+    optimized_path = OPTIMIZED_MODEL_PATH if OPTIMIZED_MODEL_PATH.exists() else None
+    if optimized_path:
+        print("(Using optimized model)")
+
+    analyzer = SentimentAnalyzer(optimized_path=optimized_path)
     result = analyzer.analyze(text)
 
     print(f"\nSentiment: {result['sentiment']}")

@@ -11,3 +11,6 @@ wheels/
 
 # Secrets
 .env
+
+# DSPy optimized models (can be large)
+optimized_*.json
