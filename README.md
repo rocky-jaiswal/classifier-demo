@@ -60,12 +60,41 @@ result = analyzer.analyze("I love this product!")
 print(result["sentiment"])  # POSITIVE
 ```
 
+## Evaluation
+
+Two evaluation approaches are available to check if sentiment explanations are grounded (not hallucinated):
+
+### Simple Evaluation (Fast)
+
+```bash
+uv run python evaluate.py
+```
+
+Uses DSPy with Claude Haiku as a grounding checker. Evaluates 10 samples quickly and reports:
+- **Sentiment Accuracy** - Does the predicted sentiment match the expected?
+- **Grounded Explanations** - Is the explanation based only on the input text?
+
+### RAGAs Evaluation (Thorough)
+
+```bash
+uv run python ragas_eval.py
+```
+
+Uses the RAGAs framework with the **Faithfulness** metric. This is the industry-standard approach for evaluating if LLM outputs are grounded in context.
+
+**Note:** RAGAs is slower because the Faithfulness metric makes multiple LLM calls per sample:
+1. Extracts atomic claims from the response
+2. Verifies each claim against the context
+3. Calculates `supported_claims / total_claims`
+
 ## Project Structure
 
 ```
 classifier-demo/
 ├── main.py                 # CLI interface
 ├── optimize.py             # DSPy optimization script
+├── evaluate.py             # Fast DSPy-based evaluation
+├── ragas_eval.py           # RAGAs evaluation (Faithfulness)
 ├── data/
 │   └── sentiment_dataset.json
 ├── src/classifier_demo/

@@ -17,9 +17,7 @@ class SentimentSignature(dspy.Signature):
 
     text: str = dspy.InputField(desc="The text to analyze")
     sentiment: Sentiment = dspy.OutputField(desc="The sentiment classification")
-    explanation: str = dspy.OutputField(
-        desc="Brief explanation for the classification"
-    )
+    explanation: str = dspy.OutputField(desc="Brief explanation for the classification")
 
 
 class SentimentAnalyzer(dspy.Module):

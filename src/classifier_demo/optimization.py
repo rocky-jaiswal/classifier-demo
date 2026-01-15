@@ -19,7 +19,9 @@ def load_dataset(path: Path) -> list[Example]:
         return json.load(f)
 
 
-def sentiment_metric(example: dspy.Example, prediction: dspy.Prediction, trace=None) -> bool:
+def sentiment_metric(
+    example: dspy.Example, prediction: dspy.Prediction, trace=None
+) -> bool:
     """Metric: does predicted sentiment match expected sentiment?"""
     return prediction.sentiment == example.sentiment
 
