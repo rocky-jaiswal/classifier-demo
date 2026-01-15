@@ -1,53 +1,13 @@
+"""Sentiment analysis using Claude via DSPy with Guardrails validation."""
+
 from pathlib import Path
-from typing import TypedDict, Any
+from typing import TypedDict
+
 import dspy
 from guardrails import Guard
-from guardrails.validators import (
-    Validator,
-    ValidationResult,
-    PassResult,
-    FailResult,
-    register_validator,
-)
 
-from .config import DEFAULT_MODEL, Sentiment, VALID_SENTIMENTS
-
-
-@register_validator(name="valid_choices", data_type="string")
-class ValidChoices(Validator):
-    """Validates that a value is one of the allowed choices."""
-
-    def __init__(self, choices: list[str], on_fail: str = "exception"):
-        super().__init__(on_fail=on_fail)
-        self.choices = choices
-
-    def validate(self, value: Any, metadata: dict = {}) -> ValidationResult:
-        if value in self.choices:
-            return PassResult()
-        return FailResult(
-            error_message=f"Value '{value}' is not in allowed choices: {self.choices}"
-        )
-
-
-@register_validator(name="no_profanity", data_type="string")
-class NoProfanity(Validator):
-    """Validates that input text does not contain profane/toxic words."""
-
-    # Basic blocklist - in production, use a proper library like `profanity-check` or `better-profanity`
-    DEFAULT_BLOCKLIST = {"shit", "damn", "crap"}
-
-    def __init__(self, blocklist: set[str] | None = None, on_fail: str = "exception"):
-        super().__init__(on_fail=on_fail)
-        self.blocklist = blocklist or self.DEFAULT_BLOCKLIST
-
-    def validate(self, value: Any, metadata: dict = {}) -> ValidationResult:
-        text_lower = value.lower()
-        found = [word for word in self.blocklist if word in text_lower]
-        if not found:
-            return PassResult()
-        return FailResult(
-            error_message="Input contains prohibited content. Please rephrase."
-        )
+from .config import COMPETITORS, DEFAULT_MODEL, Sentiment, VALID_SENTIMENTS
+from .validators import NoCompetitors, NoPII, NoProfanity, ValidChoices
 
 
 class SentimentResult(TypedDict):
@@ -77,8 +37,13 @@ class SentimentAnalyzer(dspy.Module):
         dspy.configure(lm=dspy.LM(model))
         self.predict = dspy.Predict(SentimentSignature)
 
-        # Guardrail: Validate input doesn't contain profanity
-        self.input_guard = Guard().use(NoProfanity(on_fail="exception"))
+        # Guardrail: Validate input (chained validators)
+        self.input_guard = (
+            Guard()
+            .use(NoProfanity(on_fail="exception"))
+            .use(NoPII(on_fail="exception"))
+            .use(NoCompetitors(competitors=COMPETITORS, on_fail="exception"))
+        )
 
         # Guardrail: Validate sentiment output is one of the allowed values
         self.output_guard = Guard().use(

@@ -6,3 +6,6 @@ DEFAULT_MODEL = "anthropic/claude-sonnet-4-20250514"
 
 Sentiment = Literal["POSITIVE", "NEGATIVE", "NEUTRAL"]
 VALID_SENTIMENTS = list(get_args(Sentiment))
+
+# Example competitor list - customize for your use case
+COMPETITORS = ["openai", "chatgpt", "gemini", "grok", "llama", "mistral"]
