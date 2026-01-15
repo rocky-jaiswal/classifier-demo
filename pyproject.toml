@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Sentiment analysis CLI using Claude and DSPy"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["anthropic>=0.76.0", "dspy>=3.1.0", "python-dotenv>=1.2.1"]
+dependencies = [
+    "anthropic>=0.76.0",
+    "dspy>=3.1.0",
+    "guardrails-ai>=0.7.2",
+    "python-dotenv>=1.2.1",
+]
 
 [dependency-groups]
 dev = [
