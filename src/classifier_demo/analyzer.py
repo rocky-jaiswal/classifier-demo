@@ -29,6 +29,27 @@ class ValidChoices(Validator):
         )
 
 
+@register_validator(name="no_profanity", data_type="string")
+class NoProfanity(Validator):
+    """Validates that input text does not contain profane/toxic words."""
+
+    # Basic blocklist - in production, use a proper library like `profanity-check` or `better-profanity`
+    DEFAULT_BLOCKLIST = {"shit", "damn", "crap"}
+
+    def __init__(self, blocklist: set[str] | None = None, on_fail: str = "exception"):
+        super().__init__(on_fail=on_fail)
+        self.blocklist = blocklist or self.DEFAULT_BLOCKLIST
+
+    def validate(self, value: Any, metadata: dict = {}) -> ValidationResult:
+        text_lower = value.lower()
+        found = [word for word in self.blocklist if word in text_lower]
+        if not found:
+            return PassResult()
+        return FailResult(
+            error_message="Input contains prohibited content. Please rephrase."
+        )
+
+
 class SentimentResult(TypedDict):
     """Structured result from sentiment analysis."""
 
@@ -56,6 +77,9 @@ class SentimentAnalyzer(dspy.Module):
         dspy.configure(lm=dspy.LM(model))
         self.predict = dspy.Predict(SentimentSignature)
 
+        # Guardrail: Validate input doesn't contain profanity
+        self.input_guard = Guard().use(NoProfanity(on_fail="exception"))
+
         # Guardrail: Validate sentiment output is one of the allowed values
         self.output_guard = Guard().use(
             ValidChoices(choices=VALID_SENTIMENTS, on_fail="exception")
@@ -69,6 +93,9 @@ class SentimentAnalyzer(dspy.Module):
 
     def analyze(self, text: str) -> SentimentResult:
         """Analyze sentiment and return structured result."""
+        # Validate input before sending to LLM
+        self.input_guard.validate(text)
+
         result = self(text=text)
 
         # Validate output with guardrail
