@@ -105,6 +105,26 @@ classifier-demo/
 └── optimized_sentiment.json  # Generated after optimization
 ```
 
+## MLflow Tracing
+
+The project uses MLflow to capture and inspect prompts sent to Anthropic.
+
+**Run the analyzer** (traces are captured automatically):
+```bash
+uv run python main.py
+```
+
+**View traces in MLflow UI:**
+```bash
+uv run mlflow ui
+```
+
+Open http://localhost:5000 to see:
+- Full prompts sent to the LLM (including few-shot examples)
+- Model responses
+- Latency and token usage
+- Experiment history
+
 ## Configuration
 
 Edit `src/classifier_demo/config.py` to change:

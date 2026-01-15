@@ -14,3 +14,7 @@ wheels/
 
 # DSPy optimized models (can be large)
 optimized_*.json
+
+# MLflow
+mlruns/
+mlflow.db

@@ -2,12 +2,16 @@ import os
 import warnings
 from pathlib import Path
 from dotenv import load_dotenv
+import mlflow
 from classifier_demo import SentimentAnalyzer
 
 OPTIMIZED_MODEL_PATH = Path(__file__).parent / "optimized_sentiment.json"
 
 # Suppress DSPy/LiteLLM serialization warnings
 warnings.filterwarnings("ignore", message="Pydantic serializer warnings")
+
+# Enable MLflow autologging for DSPy - captures all prompts/responses
+mlflow.dspy.autolog()
 
 
 def main():
